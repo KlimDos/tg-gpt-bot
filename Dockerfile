@@ -1,11 +1,13 @@
 
 FROM python:slim-buster
 LABEL maintainer="Sasha Alimov klimdos@gmail.com"
-WORKDIR /src
-COPY src/ .
-RUN pip install -r requirements.txt
+WORKDIR /app_workdir
+COPY src/ src/
+COPY readme.md .
+
+RUN pip install -r src/requirements.txt
 
 ENV TG_API_TOKEN=""
 ENV GPT_API_TOKEN=""
 
-ENTRYPOINT ["python", "app.py"]
+ENTRYPOINT ["python", "src/app.py"]
