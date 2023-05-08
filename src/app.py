@@ -26,41 +26,52 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
         f"{TG_VER} version of this example, "
         f"visit https://docs.python-telegram-bot.org/en/v{TG_VER}/examples.html"
     )
-from telegram import Update
+from telegram import Update, ForceReply
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
 
 import openai
-from key_words import init_key_words_list
+import json
+from dotenv import load_dotenv
 
+load_dotenv()
 # Enable logging
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
-# TODO
-# Define a few command handlers. These usually take the two arguments update and
-# context.
-# async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-#     """Send a message when the command /start is issued."""
-#     user = update.effective_user
-#     await update.message.reply_html(
-#         rf"Hi {user.mention_html()}!",
-#         reply_markup=ForceReply(selective=True),
-#     )
-# async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-#     """Send a message when the command /help is issued."""
-#     await update.message.reply_text("Help!")
+# Define a few command handlers.
+async def about(update: Update, context: ContextTypes.DEFAULT_TYPE, msg) -> None:
+    """Send a message when the command /start is issued."""
+    user = update.effective_user
+    await update.message.reply_html(
+        rf"Привет {user.mention_html()} "
+        f"{msg}",
+        reply_markup=ForceReply(selective=True),
+    )
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Send a message when the command /help is issued."""
+
+    # Opening JSON file
+    f = open("src/persistance.json")
+    data = json.load(f)
+
+    await update.message.reply_text("Список слов на которые реагирует бот: \n"
+                                    f"{data['init_key_words_list']}")
 
 # Function to be called when messages are received
 async def process_msg(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     
     message = update.message.text
-    logger.info(f"User message: {message}")
-    
-    key_words = init_key_words_list
+    logger.info(
+        f"User {update._effective_user.id} {update._effective_user.full_name} message: {message}")
+
+    # Opening JSON file
+    f = open("src/persistance.json")
+    data = json.load(f)
+
     # In case any init key words in message, respond to msg
-    if any(elem in message for elem in key_words):
+    if any(elem in message for elem in data['init_key_words_list']):
         # Available AI models
         #models = openai.Model.list()
 
@@ -87,7 +98,7 @@ async def process_msg(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
                 f"total tokens spent: {response['usage']['total_tokens']} ")
         else:
             await context.bot.send_message(chat_id=242426387, text=f"Error generating text: {response.error}")
-
+    f.close()
 
 def main() -> None:
     """Start the bot."""
@@ -95,12 +106,15 @@ def main() -> None:
     # Set your OpenAI API key
     openai.api_key = os.getenv('GPT_API_TOKEN')
 
+    with open(f"readme.md", 'r') as f:
+        markdown_string = f.read()
+
     # Create the Application and pass it your bot's token.
     application = Application.builder().token(TG_API_TOKEN).build()
 
 
-    # application.add_handler(CommandHandler("start", start))
-    # application.add_handler(CommandHandler("help", help_command))
+    application.add_handler(CommandHandler("bot", lambda update, context: about(update, context, markdown_string)))
+    application.add_handler(CommandHandler("help", help_command))
 
     # execute reply_to_message func on every message on Telegram
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, process_msg))
