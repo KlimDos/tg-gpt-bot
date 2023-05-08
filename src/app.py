@@ -71,38 +71,41 @@ async def process_msg(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     data = json.load(f)
 
     # In case any init key words in message, respond to msg
-
+    matches = []
     for elem in data['init_key_words_list']:
         if elem in message.lower():
+            matches.append(elem)
             logger.info(f"Found: {elem} in {message}")
     #if any(print(elem) in message for elem in data['init_key_words_list']):
             # Available AI models
             #models = openai.Model.list()
 
-            # Specify the prompt and parameters for generating text
-            # Generate text using the OpenAI API
-            response = openai.Completion.create(
-                    model="text-davinci-003",
-                    prompt=message,
-                    max_tokens=500,
-                    temperature=0
-                    )
+    # Specify the prompt and parameters for generating text
+    # Generate text using the OpenAI API
+    if matches:
+        response = openai.Completion.create(
+                model="text-davinci-002",
+                prompt=message,
+                max_tokens=500,
+                temperature=0
+                )
 
-            if response.choices:
-                # Replay to to given message
-                await update.message.reply_text(response.choices[0].text)
-                await context.bot.send_message(chat_id=242426387, text="Respond sent "
-                    f"prompt tokens: {response['usage']['prompt_tokens']} "
-                    f"completion tokens: {response['usage']['completion_tokens']} "
-                    f"total tokens spent: {response['usage']['total_tokens']} ")
-                logger.info(
-                    "Respond sent "
-                    f"prompt tokens: {response['usage']['prompt_tokens']} "
-                    f"completion tokens: {response['usage']['completion_tokens']} "
-                    f"total tokens spent: {response['usage']['total_tokens']} ")
-            else:
-                await context.bot.send_message(chat_id=242426387, text=f"Error generating text: {response.error}")
-        f.close()
+        if response.choices:
+            # Replay to to given message
+            await update.message.reply_text(
+                f"matches: {matches} tokens: {response['usage']['total_tokens']}\n{response.choices[0].text}")
+            await context.bot.send_message(chat_id=242426387, text=""
+                f"prompt tokens: {response['usage']['prompt_tokens']} "
+                f"completion tokens: {response['usage']['completion_tokens']} "
+                f"total tokens spent: {response['usage']['total_tokens']} ")
+            logger.info(
+                "Respond sent "
+                f"prompt tokens: {response['usage']['prompt_tokens']} "
+                f"completion tokens: {response['usage']['completion_tokens']} "
+                f"total tokens spent: {response['usage']['total_tokens']} ")
+        else:
+            await context.bot.send_message(chat_id=242426387, text=f"Error generating text: {response.error}")
+    f.close()
 
 def main() -> None:
     """Start the bot."""
