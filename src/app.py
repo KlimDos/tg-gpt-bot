@@ -84,16 +84,17 @@ async def process_msg(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     # Generate text using the OpenAI API
     if matches:
         response = openai.Completion.create(
-                model="text-davinci-002",
+                model="text-davinci-003",
                 prompt=message,
-                max_tokens=500,
+                max_tokens=1000,
                 temperature=0
                 )
 
         if response.choices:
             # Replay to to given message
             await update.message.reply_text(
-                f"matches: {matches} tokens: {response['usage']['total_tokens']}\n{response.choices[0].text}")
+                f"{response.choices[0].text}\n\n"
+                f"matches: {matches} tokens: {response['usage']['total_tokens']}")
             await context.bot.send_message(chat_id=242426387, text=""
                 f"prompt tokens: {response['usage']['prompt_tokens']} "
                 f"completion tokens: {response['usage']['completion_tokens']} "
