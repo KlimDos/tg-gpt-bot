@@ -65,17 +65,23 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 async def stop_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """put user to ignored list"""
 
-    #with open('src/persistance.json', 'w') as json_file: 
-    
     # Opening JSON file
     with open("src/persistance.json","r+") as f:
         data = json.load(f)
         data['ignore_users'].append(update.effective_user.id)
         data['ignore_users'] = list(set(data['ignore_users']))
-        f.seek(0)
         json.dump(data, f, ensure_ascii=False)
         f.close()
 
+async def let_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """put user to ignored list"""
+
+    # Opening JSON file
+    with open("src/persistance.json","r+") as f:
+        data = json.load(f)
+        data['ignore_users'].remove(update.effective_user.id)
+        json.dump(data, f, ensure_ascii=False)
+        f.close()
 
 
 # Function to be called when messages are received
@@ -147,7 +153,7 @@ def main() -> None:
     application.add_handler(CommandHandler("about", lambda update, context: about(update, context, markdown_string)))
     application.add_handler(CommandHandler("keywords", help_command))
     application.add_handler(CommandHandler("stop", stop_command))
-    # application.add_handler(CommandHandler("let", let_command))
+    application.add_handler(CommandHandler("let", let_command))
     # execute reply_to_message func on every message on Telegram
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, process_msg))
 
