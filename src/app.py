@@ -53,7 +53,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     """Send a message when the command /help is issued."""
 
     # Opening JSON file
-    f = open("src/persistance.json")
+    f = open("src/persistance/persistance.json")
     data = json.load(f)
 
     await update.message.reply_text("Список слов на которые реагирует бот: \n"
@@ -65,10 +65,10 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 async def stop_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """put user to ignored list"""
 
-    #with open('src/persistance.json', 'w') as json_file: 
+    #with open('src/persistance/persistance.json', 'w') as json_file: 
     
     # Opening JSON file
-    with open("src/persistance.json","r+") as f:
+    with open("src/persistance/persistance.json","r+") as f:
         data = json.load(f)
         data['ignore_users'].append(update.effective_user.id)
         data['ignore_users'] = list(set(data['ignore_users']))
@@ -86,7 +86,7 @@ async def process_msg(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         f"User {update._effective_user.id} {update._effective_user.full_name} message: {message}")
 
     # Opening JSON file
-    f = open("src/persistance.json")
+    f = open("src/persistance/persistance.json")
     data = json.load(f)
 
     if update.effective_user.id in data['ignore_users']:
