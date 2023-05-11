@@ -32,6 +32,7 @@ from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandl
 import openai
 import json
 from dotenv import load_dotenv
+#import asyncio
 
 load_dotenv()
 # Enable logging
@@ -53,7 +54,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     """Send a message when the command /help is issued."""
 
     # Opening JSON file
-    f = open("src/persistance.json")
+    f = open("src/persistance/persistance.json")
     data = json.load(f)
 
     await update.message.reply_text("Список слов на которые реагирует бот: \n"
@@ -66,22 +67,30 @@ async def stop_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     """put user to ignored list"""
 
     # Opening JSON file
-    with open("src/persistance.json","r+") as f:
+    with open("src/persistance/persistance.json","r+") as f:
         data = json.load(f)
         data['ignore_users'].append(update.effective_user.id)
         data['ignore_users'] = list(set(data['ignore_users']))
+        # cleanup file
+        f.seek(0)
+        f.truncate()
         json.dump(data, f, ensure_ascii=False)
         f.close()
+        logger.info(f"User {update.effective_user.id} added to ignored")
 
 async def let_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """put user to ignored list"""
 
     # Opening JSON file
-    with open("src/persistance.json","r+") as f:
+    with open("src/persistance/persistance.json","r+") as f:
         data = json.load(f)
         data['ignore_users'].remove(update.effective_user.id)
+        # cleanup file
+        f.seek(0)
+        f.truncate()
         json.dump(data, f, ensure_ascii=False)
         f.close()
+        logger.info(f"User {update.effective_user.id} removed from ignored")
 
 
 # Function to be called when messages are received
@@ -92,7 +101,7 @@ async def process_msg(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         f"User {update._effective_user.id} {update._effective_user.full_name} message: {message}")
 
     # Opening JSON file
-    f = open("src/persistance.json")
+    f = open("src/persistance/persistance.json")
     data = json.load(f)
 
     if update.effective_user.id in data['ignore_users']:
@@ -137,6 +146,20 @@ async def process_msg(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
             await context.bot.send_message(chat_id=242426387, text=f"Error generating text: {response.error}")
     f.close()
 
+# async def send_tg_log(msg: str, app: Application):
+#       return await app.bot.send_message(chat_id=242426387, text=msg)
+
+# def sync_func(app):
+#     print('Start sync_func')
+#     # Запуск асинхронной функции
+#     asyncio.run(async_func(app))
+#     print('End sync_func')
+
+# async def async_func(app: Application):
+#     print('Start async_func')
+#     await app.bot.send_message(chat_id=242426387, text='msg')
+#     print('End async_func')
+
 def main() -> None:
     """Start the bot."""
     TG_API_TOKEN = os.getenv('TG_API_TOKEN')
@@ -149,7 +172,6 @@ def main() -> None:
     # Create the Application and pass it your bot's token.
     application = Application.builder().token(TG_API_TOKEN).build()
 
-
     application.add_handler(CommandHandler("about", lambda update, context: about(update, context, markdown_string)))
     application.add_handler(CommandHandler("keywords", help_command))
     application.add_handler(CommandHandler("stop", stop_command))
@@ -159,6 +181,7 @@ def main() -> None:
 
     # Run the bot until the user presses Ctrl-C
     application.run_polling()
+    asyncio.run(application.bot.send_message(chat_id=242426387, text="msg"))
 
 
 if __name__ == "__main__":
