@@ -132,7 +132,7 @@ async def process_msg(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     if matches:
         response = openai.Completion.create(
                 model="text-davinci-003",
-                prompt=message,
+                prompt=message.rstrip(),
                 max_tokens=1000,
                 temperature=0
                 )
@@ -153,6 +153,8 @@ async def process_msg(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
                 f"total tokens spent: {response['usage']['total_tokens']} ")
         else:
             await context.bot.send_message(chat_id=242426387, text=f"Error generating text: {response.error}")
+    else:
+        logger.info("no keywords found")
     f.close()
 
 # async def send_tg_log(msg: str, app: Application):
