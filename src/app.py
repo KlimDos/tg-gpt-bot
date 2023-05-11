@@ -77,6 +77,8 @@ async def stop_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         json.dump(data, f, ensure_ascii=False)
         f.close()
         logger.info(f"User {update.effective_user.id} added to ignored")
+        await update.message.reply_text(f"User {update.effective_user.id} added to ignored")
+
 
 async def let_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """put user to ignored list"""
@@ -91,6 +93,7 @@ async def let_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         json.dump(data, f, ensure_ascii=False)
         f.close()
         logger.info(f"User {update.effective_user.id} removed from ignored")
+        await update.message.reply_text(f"User {update.effective_user.id} removed from ignored")
 
 
 # Function to be called when messages are received
@@ -114,11 +117,9 @@ async def process_msg(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         if elem in message.lower():
             matches.append(elem)
             logger.info(f"Found: {elem} in {message}")
-    #if any(print(elem) in message for elem in data['init_key_words_list']):
             # Available AI models
             #models = openai.Model.list()
 
-    # Specify the prompt and parameters for generating text
     # Generate text using the OpenAI API
     if matches:
         response = openai.Completion.create(
@@ -166,7 +167,7 @@ def main() -> None:
     # Set your OpenAI API key
     openai.api_key = os.getenv('GPT_API_TOKEN')
 
-    with open(f"readme.md", 'r') as f:
+    with open(f"about.md", 'r') as f:
         markdown_string = f.read()
 
     # Create the Application and pass it your bot's token.
@@ -181,7 +182,6 @@ def main() -> None:
 
     # Run the bot until the user presses Ctrl-C
     application.run_polling()
-    asyncio.run(application.bot.send_message(chat_id=242426387, text="msg"))
 
 
 if __name__ == "__main__":

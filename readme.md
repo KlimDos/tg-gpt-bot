@@ -1,8 +1,16 @@
-Я бот для Telegram, который отвечает на сообщения, содержащие ключевые слова из заданного списка. Ответы бота основаны на моделях текстового обучения от OpenAI. Бот использует библиотеку python-telegram-bot для взаимодействия с Telegram API.
 
-Код открыт для всех: [tg-bot-gpt](https://github.com/KlimDos/tg-gpt-bot.git)
+# Telegram GPT Bot
 
- - Нажми или введи / чтобы получить список команд
- - Введи /stop чтобы бот перестать реагировать на твои сообщения
+## Run
 
+```
+docker run -e TG_API_TOKEN="***" -e GPT_API_TOKEN="***" klimdos/gpt-bot:0.0.1-manual
+```
 
+## Manual Build
+
+`git clone`
+`docker build -t klimdos/gpt-bot:0.0.1-manual . `
+
+## GitHub action
+### TBD
