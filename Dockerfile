@@ -3,7 +3,7 @@ FROM python:slim-buster
 LABEL maintainer="Sasha Alimov klimdos@gmail.com"
 WORKDIR /app_workdir
 COPY src/ src/
-COPY readme.md .
+COPY about.md .
 
 RUN pip install -r src/requirements.txt
 

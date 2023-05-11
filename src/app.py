@@ -44,22 +44,27 @@ logger = logging.getLogger(__name__)
 # Define a few command handlers.
 async def about(update: Update, context: ContextTypes.DEFAULT_TYPE, msg) -> None:
     """Send a message when the command /start is issued."""
-    user = update.effective_user
-    await update.message.reply_html(
-        rf"Привет {user.mention_html()} "
-        f"{msg}",
-        reply_markup=ForceReply(selective=True),
-    )
+    #user = update.effective_user
+    # await context.bot.send_message(
+    #         chat_id=update.effective_user.id, text=f"Привет {update.effective_user.full_name}! \n"
+    #         f"{msg}")
+
+    return await update.message.reply_text(
+        f"Привет {update.effective_user.full_name}: \n"
+        f"{msg}")
+
+
+
+
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a message when the command /help is issued."""
 
     # Opening JSON file
     f = open("src/persistance/persistance.json")
     data = json.load(f)
-
-    await update.message.reply_text("Список слов на которые реагирует бот: \n"
-                                    f"{data['init_key_words_list']}")
-    
+    await update.message.reply_text(
+        "Список слов на которые реагирует бот: \n"
+        f"{data['init_key_words_list']}")
     f.close
 
 
@@ -77,7 +82,8 @@ async def stop_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         json.dump(data, f, ensure_ascii=False)
         f.close()
         logger.info(f"User {update.effective_user.id} added to ignored")
-        await update.message.reply_text(f"User {update.effective_user.id} added to ignored")
+        await context.bot.send_message(
+            chat_id=242426387, text=f"User {update.effective_user.id} added to ignored")
 
 
 async def let_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -93,7 +99,9 @@ async def let_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         json.dump(data, f, ensure_ascii=False)
         f.close()
         logger.info(f"User {update.effective_user.id} removed from ignored")
-        await update.message.reply_text(f"User {update.effective_user.id} removed from ignored")
+        await context.bot.send_message(
+            chat_id=242426387, text=f"User {update.effective_user.id} removed from ignored")
+
 
 
 # Function to be called when messages are received
