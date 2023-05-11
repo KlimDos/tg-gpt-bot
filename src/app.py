@@ -139,11 +139,9 @@ async def process_msg(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         #         )
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
-            messages= [{
-                  "role": "user",
-                  "max_tokens": 1000,
-                  "content": promt
-                }]
+            max_tokens=1000,
+            temperature=0
+            messages= [{"role": "user","content": promt }]
         )
         if response.choices:
             # Replay to to given message
