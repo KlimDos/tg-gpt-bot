@@ -140,7 +140,7 @@ async def process_msg(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             max_tokens=1000,
-            temperature=0
+            temperature=0,
             messages= [{"role": "user","content": promt }]
         )
         if response.choices:
