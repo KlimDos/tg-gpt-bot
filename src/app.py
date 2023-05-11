@@ -129,18 +129,26 @@ async def process_msg(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
             #models = openai.Model.list()
 
     # Generate text using the OpenAI API
+    promt = message.replace("\n","")
     if matches:
-        response = openai.Completion.create(
-                model="text-davinci-003",
-                prompt=message.rstrip(),
-                max_tokens=1000,
-                temperature=0
-                )
-
+        # response = openai.Completion.create(
+        #         model="text-davinci-003",
+        #         prompt=promt,
+        #         max_tokens=1000,
+        #         temperature=0
+        #         )
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages= [{
+                  "role": "user",
+                  "max_tokens": 1000,
+                  "content": promt
+                }]
+        )
         if response.choices:
             # Replay to to given message
             await update.message.reply_text(
-                f"{response.choices[0].text}\n\n"
+                f"{response['choices'][0]['message']['content']}\n\n"
                 f"matches: {matches} tokens: {response['usage']['total_tokens']}")
             await context.bot.send_message(chat_id=242426387, text=""
                 f"prompt tokens: {response['usage']['prompt_tokens']} "
