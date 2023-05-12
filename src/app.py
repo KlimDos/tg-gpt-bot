@@ -27,7 +27,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
         f"visit https://docs.python-telegram-bot.org/en/v{TG_VER}/examples.html"
     )
 from telegram import Update, ForceReply
-from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
+from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters, Updater
 
 import openai
 import json
@@ -41,24 +41,51 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Define a few command handlers.
 async def about(update: Update, context: ContextTypes.DEFAULT_TYPE, msg) -> None:
     """Send a message when the command /start is issued."""
-    #user = update.effective_user
-    # await context.bot.send_message(
-    #         chat_id=update.effective_user.id, text=f"Привет {update.effective_user.full_name}! \n"
-    #         f"{msg}")
+
+    await context.bot.delete_message(
+        chat_id=update.effective_chat.id, message_id=update.effective_message.id
+    )
 
     return await update.message.reply_text(
         f"Привет {update.effective_user.full_name}: \n"
         f"{msg}")
 
-
-
-
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def keywords_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a message when the command /help is issued."""
+    
+    await context.bot.delete_message(
+            chat_id=update.effective_chat.id, message_id=update.effective_message.id
+        )
+    # Opening JSON file
+    f = open("src/persistance/persistance.json")
+    data = json.load(f)
+    await update.message.reply_text(
+        "Список слов на которые реагирует бот: \n"
+        f"{data['init_key_words_list']}")
+    f.close
 
+async def add_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Send a message when the command /help is issued."""
+    
+    await context.bot.delete_message(
+            chat_id=update.effective_chat.id, message_id=update.effective_message.id
+        )
+    # Opening JSON file
+    f = open("src/persistance/persistance.json")
+    data = json.load(f)
+    await update.message.reply_text(
+        "Список слов на которые реагирует бот: \n"
+        f"{data['init_key_words_list']}")
+    f.close
+
+async def del_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Send a message when the command /help is issued."""
+    
+    await context.bot.delete_message(
+            chat_id=update.effective_chat.id, message_id=update.effective_message.id
+        )
     # Opening JSON file
     f = open("src/persistance/persistance.json")
     data = json.load(f)
@@ -68,8 +95,13 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     f.close
 
 
+
 async def stop_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """put user to ignored list"""
+
+    await context.bot.delete_message(
+        chat_id=update.effective_chat.id, message_id=update.effective_message.id
+    )
 
     # Opening JSON file
     with open("src/persistance/persistance.json","r+") as f:
@@ -85,10 +117,12 @@ async def stop_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         await context.bot.send_message(
             chat_id=242426387, text=f"User {update.effective_user.id} added to ignored")
 
-
 async def let_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """put user to ignored list"""
 
+    await context.bot.delete_message(
+        chat_id=update.effective_chat.id, message_id=update.effective_message.id
+    )
     # Opening JSON file
     with open("src/persistance/persistance.json","r+") as f:
         data = json.load(f)
@@ -101,8 +135,6 @@ async def let_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         logger.info(f"User {update.effective_user.id} removed from ignored")
         await context.bot.send_message(
             chat_id=242426387, text=f"User {update.effective_user.id} removed from ignored")
-
-
 
 # Function to be called when messages are received
 async def process_msg(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -131,12 +163,6 @@ async def process_msg(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     # Generate text using the OpenAI API
     promt = message.replace("\n","")
     if matches:
-        # response = openai.Completion.create(
-        #         model="text-davinci-003",
-        #         prompt=promt,
-        #         max_tokens=1000,
-        #         temperature=0
-        #         )
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             max_tokens=1000,
@@ -163,24 +189,10 @@ async def process_msg(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         logger.info("no keywords found")
     f.close()
 
-# async def send_tg_log(msg: str, app: Application):
-#       return await app.bot.send_message(chat_id=242426387, text=msg)
-
-# def sync_func(app):
-#     print('Start sync_func')
-#     # Запуск асинхронной функции
-#     asyncio.run(async_func(app))
-#     print('End sync_func')
-
-# async def async_func(app: Application):
-#     print('Start async_func')
-#     await app.bot.send_message(chat_id=242426387, text='msg')
-#     print('End async_func')
-
 def main() -> None:
     """Start the bot."""
+
     TG_API_TOKEN = os.getenv('TG_API_TOKEN')
-    # Set your OpenAI API key
     openai.api_key = os.getenv('GPT_API_TOKEN')
 
     with open(f"about.md", 'r') as f:
@@ -189,10 +201,14 @@ def main() -> None:
     # Create the Application and pass it your bot's token.
     application = Application.builder().token(TG_API_TOKEN).build()
 
+    # handle commands
     application.add_handler(CommandHandler("about", lambda update, context: about(update, context, markdown_string)))
-    application.add_handler(CommandHandler("keywords", help_command))
+    application.add_handler(CommandHandler("keywords", keywords_command))
+    application.add_handler(CommandHandler("add", add_command))
+    application.add_handler(CommandHandler("del", del_command))
     application.add_handler(CommandHandler("stop", stop_command))
     application.add_handler(CommandHandler("let", let_command))
+
     # execute reply_to_message func on every message on Telegram
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, process_msg))
 
